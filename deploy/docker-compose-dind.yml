@@ -1,0 +1,37 @@
+version: '3.8'
+
+# Docker-in-Docker 方案：Ubuntu 22.04 容器当轻量级 VM 用
+# 容器内安装 OpenClaw + 积分系统
+
+services:
+  # Ubuntu VM 容器（SSH 进去部署）
+  ubuntu-dev:
+    image: ubuntu:22.04
+    container_name: ubuntu-dev
+    ports:
+      - "2222:22"      # SSH
+      - "8000:8000"   # Backend API
+      - "3000:3000"   # Frontend
+    volumes:
+      # 挂载宿主机 WSL2 的 workspace 到容器内
+      - /mnt/wsl/ubuntu/home/node/.openclaw/workspace-dev:/workspace
+      - points-data:/data
+    restart: unless-stopped
+    tty: true
+    stdin_open: true
+    # 容器内安装 OpenClaw + Docker（通过 init 脚本）
+    command: >
+      bash -c "
+      export DEBIAN_FRONTEND=noninteractive &&
+      apt-get update &&
+      apt-get install -y openssh-server curl git python3 python3-pip docker.io &&
+      echo 'root:points2026' | chpasswd &&
+      mkdir /var/run/sshd &&
+      sed -i 's/#PermitRootLogin.*/PermitRootLogin yes/' /etc/ssh/sshd_config &&
+      sed -i 's/#PasswordAuthentication.*/PasswordAuthentication yes/' /etc/ssh/sshd_config &&
+      echo 'Docker and SSH ready. Container IP:' && hostname -I
+      /usr/sbin/sshd -D
+      "
+
+volumes:
+  points-data:
