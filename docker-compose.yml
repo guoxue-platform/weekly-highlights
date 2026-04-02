@@ -2,17 +2,14 @@ version: '3.8'
 
 services:
   backend:
-    build:
-      context: ./backend
-      dockerfile: Dockerfile
+    build: ./backend
     container_name: points-backend
     ports:
       - "8000:8000"
-    volumes:
-      - backend-data:/data
     environment:
       - DATABASE_PATH=/data/points.db
-      - PYTHONUNBUFFERED=1
+    volumes:
+      - ./data:/data
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
@@ -21,15 +18,10 @@ services:
       retries: 3
 
   frontend:
-    build:
-      context: ./frontend
-      dockerfile: Dockerfile
+    build: ./frontend
     container_name: points-frontend
     ports:
       - "80:80"
     depends_on:
       - backend
     restart: unless-stopped
-
-volumes:
-  backend-data:
