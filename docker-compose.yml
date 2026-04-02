@@ -1,34 +1,27 @@
 version: '3.8'
 
 services:
-  backend:
-    build:
-      context: ./backend
-      dockerfile: Dockerfile
-    container_name: points-backend
+  devbox:
+    image: ubuntu:22.04
+    container_name: devbox
     ports:
-      - "8000:8000"
+      - "2222:22"   # SSH
+      - "8000:8000" # Backend API
+      - "80:80"     # Frontend
     volumes:
-      - ./data:/app/data
+      - ./data:/data
+    restart: unless-stopped
+    # 启用 systemd (Docker-in-Docker)
+    privileged: true
     environment:
-      - DATABASE_PATH=/app/data/points.db
-      - PYTHONUNBUFFERED=1
-    restart: unless-stopped
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-
-  frontend:
-    build:
-      context: ./frontend
-      dockerfile: Dockerfile
-      args:
-        - VITE_API_URL=http://points-backend:8000
-    container_name: points-frontend
-    ports:
-      - "80:80"
-    restart: unless-stopped
-    depends_on:
-      - backend
+      - container=docker
+    command: >
+      bash -c "
+      apt-get update &&
+      apt-get install -y openssh-server &&
+      echo 'PermitRootLogin yes' >> /etc/ssh/sshd_config &&
+      echo 'root:dev1234' | chpasswd &&
+      service ssh start &&
+      echo 'DevBox is ready on port 2222' &&
+      tail -f /dev/null
+      "
