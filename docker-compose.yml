@@ -10,8 +10,8 @@ services:
       - "80:80"     # Frontend
     volumes:
       - ./data:/data
+      - ./devbox_key.pub:/tmp/devbox_key.pub:ro
     restart: unless-stopped
-    # 启用 systemd (Docker-in-Docker)
     privileged: true
     environment:
       - container=docker
@@ -19,9 +19,10 @@ services:
       bash -c "
       apt-get update &&
       apt-get install -y openssh-server &&
-      echo 'PermitRootLogin yes' >> /etc/ssh/sshd_config &&
-      echo 'root:dev1234' | chpasswd &&
+      echo 'PermitRootLogin without-password' >> /etc/ssh/sshd_config &&
+      mkdir -p /root/.ssh && chmod 700 /root/.ssh &&
+      cat /tmp/devbox_key.pub >> /root/.ssh/authorized_keys &&
+      chmod 600 /root/.ssh/authorized_keys &&
       service ssh start &&
-      echo 'DevBox is ready on port 2222' &&
       tail -f /dev/null
       "
