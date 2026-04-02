@@ -1,13 +1,35 @@
+version: '3.8'
+
 services:
-  ubuntu-dev:
-    image: ubuntu:22.04
-    container_name: ubuntu-dev
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: points-backend
     ports:
-      - "2222:22"
-      - "3000:3000"   # frontend
-      - "8000:8000"   # backend
+      - "8000:8000"
     volumes:
-      - ./data:/data
+      - backend-data:/data
+    environment:
+      - DATABASE_PATH=/data/points.db
+      - PYTHONUNBUFFERED=1
     restart: unless-stopped
-    tty: true
-    stdin_open: true
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: points-frontend
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    restart: unless-stopped
+
+volumes:
+  backend-data:
