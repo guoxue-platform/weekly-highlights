@@ -6,7 +6,7 @@
 |------|------|------|
 | OpenClaw | Windows 本地（不动） | — |
 | 积分系统 backend | Docker 容器 | 8000 |
-| 积分系统 frontend | Docker Nginx | 3000 |
+| 积分系统 frontend | Docker Nginx | 80 |
 
 ## 前置条件
 
@@ -49,7 +49,7 @@ docker-compose logs frontend
 
 ### 4. 访问
 
-- 前端：http://localhost:3000
+- 前端：http://localhost
 - Backend API：http://localhost:8000/health
 
 ## 停止
