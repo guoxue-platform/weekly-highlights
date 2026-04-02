@@ -6,49 +6,23 @@ on:
   workflow_dispatch:
 
 jobs:
-  deploy-frontend:
+  deploy:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
 
       - name: Setup Node
+        if: false
         uses: actions/setup-node@v4
         with:
           node-version: '20'
 
-      - name: Install and build frontend
-        run: |
-          cd frontend
-          npm install
-          npm run build
+      - name: Install Railway CLI
+        run: curl -fsSL https://railway.app/install.sh | sh
 
-      - name: Deploy frontend to Railway
+      - name: Deploy to Railway
         env:
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
         run: |
-          curl -fsSL https://railway.app/install.sh | sh
-          export RAILWAY_TOKEN="$RAILWAY_TOKEN"
-          cd frontend && railway up --service weekly-highlights-frontend
-
-  deploy-backend:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Setup Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.11'
-
-      - name: Install dependencies
-        run: |
-          cd backend
-          pip install -r requirements.txt
-
-      - name: Deploy backend to Railway
-        env:
-          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
-        run: |
-          curl -fsSL https://railway.app/install.sh | sh
-          export RAILWAY_TOKEN="$RAILWAY_TOKEN"
-          cd backend && railway up --service weekly-highlights-api
+          railway login --token "$RAILWAY_TOKEN"
+          railway up --service weekly-highlights
