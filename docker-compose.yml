@@ -1,0 +1,13 @@
+services:
+  ubuntu-dev:
+    image: ubuntu:22.04
+    container_name: ubuntu-dev
+    ports:
+      - "2222:22"
+      - "3000:3000"   # frontend
+      - "8000:8000"   # backend
+    volumes:
+      - ./data:/data
+    restart: unless-stopped
+    tty: true
+    stdin_open: true
